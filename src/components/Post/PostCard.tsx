@@ -5,7 +5,7 @@ interface Props{
     author:string
 }
 
-const PostCard:React.FC<Props> = React.memo(({title, author}) => {
+const PostCard:React.FC<Props> = ({title, author}) => {
 
     console.log("[PostCard] render")
 
@@ -22,8 +22,6 @@ const PostCard:React.FC<Props> = React.memo(({title, author}) => {
         </article>
 
     );
-},(prevProps, nextProps)=>{
-    return prevProps.author === nextProps.author && prevProps.title === nextProps.title
-});
+};
 
 export default PostCard;
