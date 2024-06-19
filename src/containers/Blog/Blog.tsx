@@ -1,82 +1,89 @@
-import "./Blog.css"
-import {useEffect, useState} from "react";
-import {BlogPost} from "../../types";
-import PostCard from "../../components/Post/PostCard";
+import './Blog.css';
+import {useCallback, useEffect, useState} from 'react';
+import {ApiPost, ApiUser, BlogPost} from '../../types';
+import PostCard from '../../components/Post/PostCard';
+import PostForm from '../../components/PostForm/PostForm';
+import axios from "axios";
+import FullPost from "../../components/FullPost/FullPost";
+import {BASE_URL, POSTS_URL, USER_URL} from "../../constants";
 
-const url= "https://jsonplaceholder.typicode.com/posts?_limit=10"
+
 const Blog = () => {
-    const [posts, setPosts]=useState<BlogPost[]>([
-        // {title:"test", author:"John", id:"1"},
-        // {title:"Hello, world", author:"Jack Black", id:"2"},
-        // {title:"Another example", author:"Main Editor", id:"3"},
-    ])
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [showPostForm, setShowPostForm] = useState(true);
+  const [counter, setCounter] = useState(0);
+  const[selectedPostId, setSelectedPostId] = useState<number | null>(null)
+  const togglePostForm = () => setShowPostForm(prev => !prev);
+  const increaseCounter = () => setCounter((prev) => prev + 1);
 
-    const [showPostForm, setShowPostForm] = useState(true)
-    const [counter, setCounter] = useState(0)
-    const togglePostForm = ()=>setShowPostForm((prevState)=> !prevState)
-    const increaseCounter = ()=>{
-        setCounter((prevState)=>prevState + 1)
-    }
+  // useEffect(() => {
+  //   console.log('[Blog] mounted/updated!');
+  // }, []);
+  //
+  // useEffect(() => {
+  //   console.log('[Blog] showPostForm value changed!');
+  //
+  //   return () => {
+  //     console.log('[Blog] in useEffect cleanup!');
+  //   };
+  // }, [showPostForm]);
 
-    useEffect(() => {
-        console.log("[Blog] Mounted/Updated")
-    });
 
-    useEffect(() => {
-        console.log("[BLOG] showPostForm value Changed")
-    }, [showPostForm]);
+  const fetchData = useCallback (async () => {
+      const postsResponse = await axios.get<ApiPost[]>(BASE_URL + POSTS_URL);
+      const promises = postsResponse.data.map(async (post)=>{
+          const userUrl = BASE_URL + USER_URL + post.userId
+          const {data:user} = await axios.get<ApiUser>(userUrl);
 
-    useEffect(() => {
-        const fetchData = async ()=>{
-            const response = await fetch(url)
-            if(response.ok){
-                const posts = await response.json() as BlogPost[]
-                const newPosts = posts.map(post =>({
-                    id:post.id,
-                    title: post.title,
-                    author: "John Doe"
+          return{
+              id:post.id,
+              title:post.title,
+              author: user.name
+          }
+      })
 
-                }))
-                setPosts(newPosts)
-            }
-        }
-        void fetchData()
-    }, []);
+      const newPosts = await Promise.all(promises)
 
-    console.log("[Blog] render")
+      setPosts(newPosts);
+  },[]);
 
-    let postForm = null
+  useEffect(() => {
 
-    if(showPostForm){
-        postForm=(
-            <section className="NewPost">
-                <p>New post form will be here</p>
-            </section>
-        )
-    }
-    return (
-        <>
-            <section className="Posts">
-                {posts.map((post)=>(
-                    <PostCard
-                        key={post.id}
-                        title={post.title}
-                        author={post.author}
-                    />
-                ))}
-            </section>
-            <hr/>
-            <button onClick={increaseCounter}>
-                Increase Counter
-            </button>
-            <section>Counter: {counter}</section>
-            <hr/>
-            <button onClick={togglePostForm}>
-                New Post
-            </button>
-            {postForm}
-        </>
+    void fetchData();
+  }, [fetchData]);
+
+
+  let postForm = null;
+
+  if (showPostForm) {
+    postForm = (
+      <PostForm/>
     );
+  }
+
+  return (
+    <>
+      <section className="Posts">
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            title={post.title}
+            author={post.author}
+            onClick={()=>setSelectedPostId(post.id)}
+          />
+        ))}
+      </section>
+        <section>
+            <FullPost id={selectedPostId}/>
+        </section>
+      <hr/>
+      <button onClick={increaseCounter}>Increase counter!</button>
+      <section>Counter: {counter}</section>
+      <hr/>
+      <button onClick={togglePostForm}>New post</button>
+      {postForm}
+    </>
+  );
 };
 
 export default Blog;

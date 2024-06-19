@@ -1,14 +1,7 @@
-
-import './App.css'
-import Blog from "./containers/Blog/Blog";
+import Blog from './containers/Blog/Blog';
 
 const App = () => {
+  return <Blog/>;
+};
 
-    return (
-        <>
-            <Blog/>
-        </>
-    );
-}
-
-export default App
+export default App;
