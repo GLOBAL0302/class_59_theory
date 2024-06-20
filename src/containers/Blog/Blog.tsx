@@ -5,7 +5,8 @@ import PostCard from '../../components/Post/PostCard';
 import PostForm from '../../components/PostForm/PostForm';
 import axios from "axios";
 import FullPost from "../../components/FullPost/FullPost";
-import {BASE_URL, POSTS_URL, USER_URL} from "../../constants";
+import apiRoutes from "../../apiRoutes";
+
 
 
 const Blog = () => {
@@ -30,9 +31,9 @@ const Blog = () => {
 
 
   const fetchData = useCallback (async () => {
-      const postsResponse = await axios.get<ApiPost[]>(BASE_URL + POSTS_URL);
+      const postsResponse = await axios.get<ApiPost[]>(apiRoutes.posts);
       const promises = postsResponse.data.map(async (post)=>{
-          const userUrl = BASE_URL + USER_URL + post.userId
+          const userUrl =  apiRoutes.oneUser(post.userId)
           const {data:user} = await axios.get<ApiUser>(userUrl);
 
           return{

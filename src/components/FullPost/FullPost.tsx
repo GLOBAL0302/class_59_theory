@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import "./FullPost.css"
 import {ApiPost} from "../../types";
 import axios from "axios";
-import {BASE_URL, POST_URL} from "../../constants";
+import apiRoutes from "../../apiRoutes";
 
 interface Props {
     id: number | null;
@@ -14,8 +14,8 @@ const FullPost: React.FC<Props> = ({id}) => {
 
     const fetchPost = useCallback(async () => {
         if (id !== null) {
-            const {data: post} = await axios.get<ApiPost>(BASE_URL + POST_URL + id)
-            console.log(BASE_URL + POST_URL + id)
+            const {data: post} = await axios.get<ApiPost>(apiRoutes.onePost(id))
+
             setPost(post)
         }
     }, [id]);
